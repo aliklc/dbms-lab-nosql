@@ -1,0 +1,55 @@
+version: "3.8"
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: nosql-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - nosql-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  mongodb:
+    image: mongo:7
+    container_name: nosql-mongodb
+    ports:
+      - "27017:27017"
+    networks:
+      - nosql-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  hazelcast:
+    image: hazelcast/hazelcast:5.3
+    container_name: nosql-hazelcast
+    ports:
+      - "5701:5701"
+    networks:
+      - nosql-network
+    environment:
+      HZ_NETWORK_PUBLICADDRESS: hazelcast:5701
+
+  app:
+    build: .
+    container_name: nosql-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+      - mongodb
+      - hazelcast
+    networks:
+      - nosql-network
+    restart: on-failure
+
+networks:
+  nosql-network:
+    driver: bridge

@@ -12,14 +12,24 @@ public class MongoStore {
     static Gson gson = new Gson();
 
     public static void init() {
-        client = MongoClients.create("mongodb://localhost:27017"); // bağlantı adresi burada
+        client = MongoClients.create("mongodb://mongodb:27017"); // Docker service name
         collection = client.getDatabase("nosqllab").getCollection("ogrenciler");
-        collection.drop(); // eski kayıtları temizle
+        
+        // Eğer veri varsa tekrar ekleme
+        if (collection.countDocuments() > 0) {
+            System.out.println("MongoDB already has data, skipping...");
+            return;
+        }
+        
+        System.out.println("Inserting 10,000 records to MongoDB...");
+        java.util.List<Document> documents = new java.util.ArrayList<>();
         for (int i = 0; i < 10000; i++) {
             String id = "2025" + String.format("%06d", i);
             Student s = new Student(id, "Ad Soyad " + i, "Bilgisayar");
-            collection.insertOne(Document.parse(gson.toJson(s)));
+            documents.add(Document.parse(gson.toJson(s)));
         }
+        collection.insertMany(documents);
+        System.out.println("MongoDB init complete!");
     }
 
     public static Student get(String id) {
