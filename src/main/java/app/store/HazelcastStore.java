@@ -45,6 +45,11 @@ public class HazelcastStore {
     }
 
     public static Student get(String id) {
-        return map.get(id);
+        try {
+            return map.get(id);
+        } catch (Exception e) {
+            System.err.println("Hazelcast get error: " + e.getMessage());
+            return null;
+        }
     }
 }

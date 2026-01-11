@@ -33,7 +33,12 @@ public class MongoStore {
     }
 
     public static Student get(String id) {
-        Document doc = collection.find(new Document("ogrenciNo", id)).first();
-        return doc != null ? gson.fromJson(doc.toJson(), Student.class) : null;
+        try {
+            Document doc = collection.find(new Document("ogrenciNo", id)).first();
+            return doc != null ? gson.fromJson(doc.toJson(), Student.class) : null;
+        } catch (Exception e) {
+            System.err.println("MongoDB get error: " + e.getMessage());
+            return null;
+        }
     }
 }

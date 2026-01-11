@@ -31,7 +31,15 @@ public class RedisStore {
     }
 
     public static Student get(String id) {
-        String json = jedis.get(id);
-        return gson.fromJson(json, Student.class);
+        try {
+            String json = jedis.get(id);
+            if (json == null || json.isEmpty()) {
+                return null;
+            }
+            return gson.fromJson(json, Student.class);
+        } catch (Exception e) {
+            System.err.println("Redis get error: " + e.getMessage());
+            return null;
+        }
     }
 }
